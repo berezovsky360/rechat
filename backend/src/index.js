@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const axios = require('axios');
+const path = require('path');
 
 // Додайте на початку файлу
 const PORT = process.env.PORT || 5000;
@@ -18,18 +19,7 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// Додайте після налаштування middleware
-// Обслуговування статичних файлів фронтенду
-if (process.env.NODE_ENV === 'production')  {
-  const path = require('path');
-  app.use(express.static(path.join(__dirname, '../../frontend/dist')));
-  
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../../frontend/dist/index.html'));
-  });
-}
-
-// Базові маршрути
+// Базові маршрути API
 app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'ok', message: 'API працює' });
 });
@@ -240,6 +230,20 @@ app.get('/api/logs', (req, res) => {
     console.error('Помилка при отриманні логів:', error);
     res.status(500).json({ success: false, message: 'Помилка сервера при отриманні логів' });
   }
+});
+
+// Обслуговування статичних файлів фронтенду
+// Цей код повинен бути після всіх API маршрутів але перед запуском сервера
+app.use(express.static(path.join(__dirname, '../../frontend/dist')));
+
+// Перенаправлення всіх запитів на index.html якщо вони не співпадають з API маршрутами
+app.get('*', (req, res) => {
+  // Пропускаємо API запити
+  if (req.path.startsWith('/api')) {
+    return res.status(404).json({ error: 'API маршрут не знайдено' });
+  }
+  // Для всіх інших запитів повертаємо index.html
+  res.sendFile(path.join(__dirname, '../../frontend/dist/index.html'));
 });
 
 // Запуск сервера
