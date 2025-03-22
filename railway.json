@@ -1,12 +1,8 @@
 {
     "$schema": "https://railway.app/railway.schema.json",
     "build": {
-      "builder": "BUILDPACKS",
-      "buildpacks": [
-        {
-          "name": "heroku/nodejs"
-        }
-      ]
+      "builder": "NIXPACKS",
+      "buildCommand": "npm install && npm run postinstall"
     },
     "deploy": {
       "startCommand": "npm start",
