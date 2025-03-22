@@ -1,7 +1,9 @@
 // Файл для роботи з OpenRouter API
 
-// Отримання API ключа з .env
-const API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY || '';
+// Отримання API ключа (спочатку з LocalStorage, потім з .env)
+const getApiKey = () => {
+  return localStorage.getItem('openrouter_api_key') || import.meta.env.VITE_OPENROUTER_API_KEY || '';
+};
 const BASE_URL = 'https://openrouter.ai/api/v1';
 
 // Доступні моделі OpenRouter
@@ -82,12 +84,12 @@ export const modelCategories = {
 // Функція для відправки повідомлення
 export const sendChatMessage = async (messages, model = 'openai/gpt-4o', maxTokens = 500, temperature = 0.7, customApiKey = null) => {
   try {
-    // Використовуємо переданий API ключ або берем з налаштувань
-    const currentApiKey = customApiKey || API_KEY;
+    // Використовуємо переданий API ключ або берем з localStorage/env
+    const currentApiKey = customApiKey || getApiKey();
     
     // Перевірка наявності API ключа
     if (!currentApiKey) {
-      throw new Error('OpenRouter API ключ не знайдено. Будь ласка, додайте VITE_OPENROUTER_API_KEY до .env файлу або передайте ключ у параметрах.');
+      throw new Error('OpenRouter API ключ не знайдено. Будь ласка, додайте API ключ у налаштуваннях.');
     }
 
     const response = await fetch(`${BASE_URL}/chat/completions`, {

@@ -1,15 +1,20 @@
 // Файл для роботи з n8n API
 
-// Отримання даних з .env
-const API_URL = import.meta.env.VITE_N8N_API_URL || '';
-const API_KEY = import.meta.env.VITE_N8N_API_KEY || '';
+// Отримання даних з localStorage або .env
+const getApiUrl = () => {
+  return localStorage.getItem('n8n_api_url') || import.meta.env.VITE_N8N_API_URL || '';
+};
+
+const getApiKey = () => {
+  return localStorage.getItem('n8n_api_key') || import.meta.env.VITE_N8N_API_KEY || '';
+};
 
 /**
  * Перевірка наявності конфігурації API
  * @returns {boolean} Чи налаштовано API
  */
 export const isConfigured = () => {
-  return !!API_URL && !!API_KEY;
+  return !!getApiUrl() && !!getApiKey();
 };
 
 /**
@@ -18,14 +23,17 @@ export const isConfigured = () => {
  */
 export const fetchWorkflows = async () => {
   try {
-    if (!isConfigured()) {
-      throw new Error('n8n API не налаштовано. Додайте API_URL та API_KEY до налаштувань.');
+    const apiUrl = getApiUrl();
+    const apiKey = getApiKey();
+    
+    if (!apiUrl || !apiKey) {
+      throw new Error('n8n API не налаштовано. Додайте URL та API ключ у налаштуваннях.');
     }
 
-    const response = await fetch(`${API_URL}/workflows`, {
+    const response = await fetch(`${apiUrl}/workflows`, {
       method: 'GET',
       headers: {
-        'X-N8N-API-KEY': API_KEY,
+        'X-N8N-API-KEY': apiKey,
       }
     });
 
@@ -47,15 +55,18 @@ export const fetchWorkflows = async () => {
  */
 export const createWorkflow = async (workflow) => {
   try {
-    if (!isConfigured()) {
-      throw new Error('n8n API не налаштовано. Додайте API_URL та API_KEY до налаштувань.');
+    const apiUrl = getApiUrl();
+    const apiKey = getApiKey();
+    
+    if (!apiUrl || !apiKey) {
+      throw new Error('n8n API не налаштовано. Додайте URL та API ключ у налаштуваннях.');
     }
 
-    const response = await fetch(`${API_URL}/workflows`, {
+    const response = await fetch(`${apiUrl}/workflows`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-N8N-API-KEY': API_KEY
+        'X-N8N-API-KEY': apiKey
       },
       body: JSON.stringify(workflow)
     });
@@ -79,19 +90,22 @@ export const createWorkflow = async (workflow) => {
  */
 export const executeWorkflow = async (workflowId, data = {}) => {
   try {
-    if (!isConfigured()) {
-      throw new Error('n8n API не налаштовано. Додайте API_URL та API_KEY до налаштувань.');
+    const apiUrl = getApiUrl();
+    const apiKey = getApiKey();
+    
+    if (!apiUrl || !apiKey) {
+      throw new Error('n8n API не налаштовано. Додайте URL та API ключ у налаштуваннях.');
     }
 
     if (!workflowId) {
       throw new Error('ID робочого процесу не вказано');
     }
 
-    const response = await fetch(`${API_URL}/workflows/${workflowId}/execute`, {
+    const response = await fetch(`${apiUrl}/workflows/${workflowId}/execute`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-N8N-API-KEY': API_KEY
+        'X-N8N-API-KEY': apiKey
       },
       body: JSON.stringify({
         data

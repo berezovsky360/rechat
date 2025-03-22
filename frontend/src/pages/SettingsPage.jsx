@@ -27,39 +27,31 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { MoonIcon, SunIcon } from "../components/ui/icons";
 
 const SettingsPage = () => {
-  const [openRouterKey, setOpenRouterKey] = useState('');
-  const [n8nApiKey, setN8nApiKey] = useState('');
-  const [n8nApiUrl, setN8nApiUrl] = useState('https://domain.com/api/v1/docs');
-  const [selectedModel, setSelectedModel] = useState('');
+  const [openRouterKey, setOpenRouterKey] = useState(localStorage.getItem('openrouter_api_key') || '');
+  const [n8nApiKey, setN8nApiKey] = useState(localStorage.getItem('n8n_api_key') || '');
+  const [n8nApiUrl, setN8nApiUrl] = useState(localStorage.getItem('n8n_api_url') || 'https://domain.com/api/v1/docs');
+  const [selectedModel, setSelectedModel] = useState(localStorage.getItem('selected_model') || 'openai/gpt-3.5-turbo');
   const [testingConnection, setTestingConnection] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
   const [saveSettings, setSaveSettings] = useState(true);
-  const [demoMode, setDemoMode] = useState(true);
+  const [demoMode, setDemoMode] = useState(localStorage.getItem('demo_mode') === 'true');
   const [apiMode, setApiMode] = useState('');
-  const [username, setUsername] = useState("Користувач");
-  const [email, setEmail] = useState("user@example.com");
-  const [theme, setTheme] = useState("system");
-  const [notifications, setNotifications] = useState(true);
-  const [tokenCount, setTokenCount] = useState(true);
-  const [streamResponse, setStreamResponse] = useState(true);
+  const [username, setUsername] = useState(localStorage.getItem('username') || "Користувач");
+  const [email, setEmail] = useState(localStorage.getItem('email') || "user@example.com");
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || "system");
+  const [notifications, setNotifications] = useState(localStorage.getItem('notifications') !== 'false');
+  const [tokenCount, setTokenCount] = useState(localStorage.getItem('token_count') !== 'false');
+  const [streamResponse, setStreamResponse] = useState(localStorage.getItem('stream_response') !== 'false');
   const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
-  const [languageModel, setLanguageModel] = useState("openai/gpt-3.5-turbo");
+  const [languageModel, setLanguageModel] = useState(localStorage.getItem('language_model') || "openai/gpt-3.5-turbo");
 
   // Отримання інформації про режим роботи при завантаженні
   useEffect(() => {
-    // Запит до API для отримання поточного режиму
-    fetch('/api/health')
-      .then(response => response.json())
-      .then(data => {
-        setApiMode(data.mode);
-        setDemoMode(data.mode === 'demo');
-      })
-      .catch(error => {
-        console.error('Помилка при отриманні інформації про режим:', error);
-      });
-  }, []);
+    // Замість запиту до API, просто використовуємо значення з localStorage
+    setApiMode(demoMode ? 'demo' : 'full');
+  }, [demoMode]);
 
   // Моделі для вибору
   const models = [
@@ -85,7 +77,7 @@ const SettingsPage = () => {
     'дорога': models.filter(model => model.price === 'дорога')
   };
 
-  // Перевірка з'єднання з OpenRouter
+  // Функція для тестування з'єднання з OpenRouter
   const testOpenRouterConnection = () => {
     if (!openRouterKey) {
       setSnackbarMessage('Будь ласка, введіть API ключ OpenRouter');
@@ -96,19 +88,40 @@ const SettingsPage = () => {
 
     setTestingConnection(true);
     
-    // Імітація перевірки з'єднання
-    setTimeout(() => {
-      setTestingConnection(false);
-      setSnackbarMessage('З\'єднання з OpenRouter успішно встановлено');
-      setSnackbarSeverity('success');
-      setSnackbarOpen(true);
-    }, 1500);
+    // Реальний запит до OpenRouter для перевірки ключа
+    fetch('https://openrouter.ai/api/v1/auth/key', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${openRouterKey}`,
+        'HTTP-Referer': window.location.origin,
+        'X-Title': 'ReChat'
+      }
+    })
+      .then(response => {
+        setTestingConnection(false);
+        if (response.ok) {
+          setSnackbarMessage('З\'єднання з OpenRouter успішно встановлено');
+          setSnackbarSeverity('success');
+          // Зберігаємо ключ в localStorage
+          localStorage.setItem('openrouter_api_key', openRouterKey);
+        } else {
+          setSnackbarMessage('Помилка при з\'єднанні з OpenRouter. Перевірте API ключ.');
+          setSnackbarSeverity('error');
+        }
+        setSnackbarOpen(true);
+      })
+      .catch(error => {
+        setTestingConnection(false);
+        setSnackbarMessage('Помилка при з\'єднанні з OpenRouter: ' + error.message);
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
+      });
   };
 
-  // Перевірка з'єднання з n8n
+  // Функція для тестування з'єднання з n8n
   const testN8nConnection = () => {
     if (!n8nApiKey || !n8nApiUrl) {
-      setSnackbarMessage('Будь ласка, введіть API ключ та URL для n8n');
+      setSnackbarMessage('Будь ласка, введіть URL та API ключ n8n');
       setSnackbarSeverity('error');
       setSnackbarOpen(true);
       return;
@@ -116,25 +129,37 @@ const SettingsPage = () => {
 
     setTestingConnection(true);
     
-    // Імітація перевірки з'єднання
+    // Тут можна додати реальний запит до n8n API
+    // Для прикладу, використовуємо тайм-аут для імітації запиту
     setTimeout(() => {
       setTestingConnection(false);
       setSnackbarMessage('З\'єднання з n8n успішно встановлено');
       setSnackbarSeverity('success');
+
+      // Зберігаємо ключі в localStorage
+      localStorage.setItem('n8n_api_key', n8nApiKey);
+      localStorage.setItem('n8n_api_url', n8nApiUrl);
+      
       setSnackbarOpen(true);
     }, 1500);
   };
 
   // Збереження налаштувань
   const saveAllSettings = () => {
-    if (!openRouterKey || !n8nApiKey || !n8nApiUrl || !selectedModel) {
-      setSnackbarMessage('Будь ласка, заповніть всі необхідні поля');
-      setSnackbarSeverity('error');
-      setSnackbarOpen(true);
-      return;
-    }
+    // Збереження всіх налаштувань в localStorage
+    localStorage.setItem('openrouter_api_key', openRouterKey);
+    localStorage.setItem('n8n_api_key', n8nApiKey);
+    localStorage.setItem('n8n_api_url', n8nApiUrl);
+    localStorage.setItem('selected_model', selectedModel);
+    localStorage.setItem('demo_mode', demoMode.toString());
+    localStorage.setItem('username', username);
+    localStorage.setItem('email', email);
+    localStorage.setItem('theme', theme);
+    localStorage.setItem('notifications', notifications.toString());
+    localStorage.setItem('token_count', tokenCount.toString());
+    localStorage.setItem('stream_response', streamResponse.toString());
+    localStorage.setItem('language_model', languageModel);
 
-    // Імітація збереження налаштувань
     setSnackbarMessage('Налаштування успішно збережено');
     setSnackbarSeverity('success');
     setSnackbarOpen(true);
@@ -144,42 +169,40 @@ const SettingsPage = () => {
   const toggleDemoMode = (event) => {
     const newDemoMode = event.target.checked;
     setDemoMode(newDemoMode);
+    localStorage.setItem('demo_mode', newDemoMode.toString());
+    setApiMode(newDemoMode ? 'demo' : 'full');
     
-    // Запит до API для зміни режиму
-    fetch('/api/settings/mode', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ demoMode: newDemoMode }),
-    })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          setSnackbarMessage(`Режим роботи змінено на ${newDemoMode ? 'демо' : 'повний'}`);
-          setSnackbarSeverity('success');
-          setApiMode(newDemoMode ? 'demo' : 'full');
-        } else {
-          setSnackbarMessage('Помилка при зміні режиму роботи');
-          setSnackbarSeverity('error');
-        }
-        setSnackbarOpen(true);
-      })
-      .catch(error => {
-        console.error('Помилка при зміні режиму роботи:', error);
-        setSnackbarMessage('Помилка при зміні режиму роботи');
-        setSnackbarSeverity('error');
-        setSnackbarOpen(true);
-      });
+    setSnackbarMessage(`Режим роботи змінено на ${newDemoMode ? 'демо' : 'повний'}`);
+    setSnackbarSeverity('success');
+    setSnackbarOpen(true);
   };
 
   const handleSave = () => {
-    // Симуляція збереження налаштувань
-    console.log("Збереження налаштувань...");
+    // Збереження всіх налаштувань
+    saveAllSettings();
   };
 
   const handleReset = () => {
-    // Симуляція скидання налаштувань
+    // Скидання налаштувань та видалення з localStorage
+    localStorage.removeItem('openrouter_api_key');
+    localStorage.removeItem('n8n_api_key');
+    localStorage.removeItem('n8n_api_url');
+    localStorage.removeItem('selected_model');
+    localStorage.removeItem('demo_mode');
+    localStorage.removeItem('username');
+    localStorage.removeItem('email');
+    localStorage.removeItem('theme');
+    localStorage.removeItem('notifications');
+    localStorage.removeItem('token_count');
+    localStorage.removeItem('stream_response');
+    localStorage.removeItem('language_model');
+    
+    // Скидання стану
+    setOpenRouterKey('');
+    setN8nApiKey('');
+    setN8nApiUrl('https://domain.com/api/v1/docs');
+    setSelectedModel('openai/gpt-3.5-turbo');
+    setDemoMode(true);
     setUsername("Користувач");
     setEmail("user@example.com");
     setTheme("system");
@@ -188,6 +211,10 @@ const SettingsPage = () => {
     setStreamResponse(true);
     setLanguageModel("openai/gpt-3.5-turbo");
     setIsResetDialogOpen(false);
+    
+    setSnackbarMessage('Налаштування скинуто до значень за замовчуванням');
+    setSnackbarSeverity('info');
+    setSnackbarOpen(true);
   };
 
   return (
