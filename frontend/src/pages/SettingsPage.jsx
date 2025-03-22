@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Box, 
   Paper, 
@@ -32,6 +32,22 @@ const SettingsPage = () => {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
   const [saveSettings, setSaveSettings] = useState(true);
+  const [demoMode, setDemoMode] = useState(true);
+  const [apiMode, setApiMode] = useState('');
+
+  // Отримання інформації про режим роботи при завантаженні
+  useEffect(() => {
+    // Запит до API для отримання поточного режиму
+    fetch('/api/health')
+      .then(response => response.json())
+      .then(data => {
+        setApiMode(data.mode);
+        setDemoMode(data.mode === 'demo');
+      })
+      .catch(error => {
+        console.error('Помилка при отриманні інформації про режим:', error);
+      });
+  }, []);
 
   // Моделі для вибору
   const models = [
@@ -112,11 +128,65 @@ const SettingsPage = () => {
     setSnackbarOpen(true);
   };
 
+  // Зміна режиму роботи (демо/повний)
+  const toggleDemoMode = (event) => {
+    const newDemoMode = event.target.checked;
+    setDemoMode(newDemoMode);
+    
+    // Запит до API для зміни режиму
+    fetch('/api/settings/mode', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ demoMode: newDemoMode }),
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          setSnackbarMessage(`Режим роботи змінено на ${newDemoMode ? 'демо' : 'повний'}`);
+          setSnackbarSeverity('success');
+          setApiMode(newDemoMode ? 'demo' : 'full');
+        } else {
+          setSnackbarMessage('Помилка при зміні режиму роботи');
+          setSnackbarSeverity('error');
+        }
+        setSnackbarOpen(true);
+      })
+      .catch(error => {
+        console.error('Помилка при зміні режиму роботи:', error);
+        setSnackbarMessage('Помилка при зміні режиму роботи');
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
+      });
+  };
+
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
         Налаштування
       </Typography>
+      
+      <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
+        <Typography variant="h6" gutterBottom>
+          Режим роботи
+        </Typography>
+        
+        <Alert severity={demoMode ? "warning" : "success"} sx={{ mb: 2 }}>
+          Зараз активний {demoMode ? "демонстраційний режим з тестовими даними" : "повний режим з реальними API"}
+        </Alert>
+        
+        <FormControlLabel
+          control={
+            <Switch 
+              checked={!demoMode} 
+              onChange={toggleDemoMode} 
+              color="primary"
+            />
+          }
+          label={!demoMode ? "Повний режим (реальні API)" : "Демо режим (тестові дані)"}
+        />
+      </Paper>
       
       <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
         <Typography variant="h6" gutterBottom>
@@ -255,7 +325,7 @@ const SettingsPage = () => {
       
       <Snackbar
         open={snackbarOpen}
-        autoHideDuration={4000}
+        autoHideDuration={6000}
         onClose={() => setSnackbarOpen(false)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
