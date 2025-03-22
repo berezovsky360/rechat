@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const axios = require('axios');
 const path = require('path');
+const helmet = require('helmet');
 
 // Завантаження змінних середовища
 dotenv.config();
@@ -24,14 +25,21 @@ console.log(`Railway Domain: ${RAILWAY_PUBLIC_DOMAIN}`);
 
 const app = express();
 
-// Налаштування Content Security Policy
-app.use((req, res, next) => {
-  res.setHeader(
-    'Content-Security-Policy',
-    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://api.openai.com https://api.openrouter.ai https://*.n8n.cloud *;"
-  );
-  next();
-});
+// Використання Helmet для безпеки
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "'wasm-unsafe-eval'", "'inline-speculation-rules'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:"],
+      connectSrc: ["'self'", "https://api.openai.com", "https://api.openrouter.ai", "https://*.n8n.cloud", "*"],
+      workerSrc: ["'self'", "blob:"]
+    }
+  },
+  crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 
 // Middleware
 app.use(cors());

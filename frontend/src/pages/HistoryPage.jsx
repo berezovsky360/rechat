@@ -1,197 +1,122 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Paper, 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableContainer, 
-  TableHead, 
-  TableRow,
-  TablePagination,
-  Chip,
-  IconButton,
-  TextField,
-  InputAdornment
-} from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import DeleteIcon from '@mui/icons-material/Delete';
+import React from 'react';
 
 const HistoryPage = () => {
-  const [history, setHistory] = useState([]);
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [searchQuery, setSearchQuery] = useState('');
-  
-  // Імітація завантаження історії запитів
-  useEffect(() => {
-    // Генеруємо тестові дані
-    const mockHistory = Array.from({ length: 50 }, (_, i) => ({
-      id: `request-${i + 1}`,
-      prompt: `Запит ${i + 1}: Створити робочий процес для ${['інтеграції з Google Drive', 'відправки повідомлень в Telegram', 'обробки даних з API', 'автоматизації маркетингу', 'моніторингу системи'][i % 5]}`,
-      timestamp: new Date(Date.now() - i * 3600000).toISOString(),
-      status: ['успішно', 'успішно', 'успішно', 'помилка', 'в обробці'][i % 5],
-      nodes: Math.floor(Math.random() * 10) + 1,
-      model: ['gpt-4', 'claude-3-opus', 'claude-3-sonnet', 'gemini-pro', 'mistral-large'][i % 5]
-    }));
-    
-    setHistory(mockHistory);
-  }, []);
-  
-  // Фільтрація історії за пошуковим запитом
-  const filteredHistory = history.filter(item => 
-    item.prompt.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.model.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-  
-  // Обробка зміни сторінки
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-  
-  // Обробка зміни кількості рядків на сторінці
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-  
-  // Обробка зміни пошукового запиту
-  const handleSearchChange = (event) => {
-    setSearchQuery(event.target.value);
-    setPage(0);
-  };
-  
-  // Видалення запису з історії
-  const handleDeleteHistoryItem = (id) => {
-    setHistory(history.filter(item => item.id !== id));
-  };
-  
-  // Перегляд деталей запиту
-  const handleViewHistoryItem = (id) => {
-    console.log(`Перегляд деталей запиту ${id}`);
-    // Тут буде логіка для відображення деталей запиту
-  };
-  
-  // Отримання кольору для статусу
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'успішно':
-        return 'success';
-      case 'помилка':
-        return 'error';
-      case 'в обробці':
-        return 'warning';
-      default:
-        return 'default';
-    }
-  };
-  
   return (
-    <Box>
-      <Typography variant="h4" gutterBottom>
-        Історія запитів
-      </Typography>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-6">Історія</h1>
       
-      <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
-        <TextField
-          fullWidth
-          label="Пошук в історії"
-          variant="outlined"
-          value={searchQuery}
-          onChange={handleSearchChange}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-          }}
-          sx={{ mb: 2 }}
-        />
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="mb-4 flex justify-between items-center">
+          <h2 className="text-xl font-semibold">Ваші запити</h2>
+          <div className="flex">
+            <input 
+              type="text" 
+              placeholder="Пошук..." 
+              className="border rounded p-2 mr-2"
+            />
+            <select className="border rounded p-2">
+              <option value="">Усі моделі</option>
+              <option value="gpt-4">GPT-4</option>
+              <option value="claude-3">Claude 3</option>
+              <option value="gemini-pro">Gemini Pro</option>
+            </select>
+          </div>
+        </div>
         
-        <TableContainer>
-          <Table sx={{ minWidth: 650 }}>
-            <TableHead>
-              <TableRow>
-                <TableCell>Запит</TableCell>
-                <TableCell>Дата і час</TableCell>
-                <TableCell>Модель</TableCell>
-                <TableCell>Вузлів</TableCell>
-                <TableCell>Статус</TableCell>
-                <TableCell align="right">Дії</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {filteredHistory
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row) => (
-                  <TableRow
-                    key={row.id}
-                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                  >
-                    <TableCell component="th" scope="row">
-                      {row.prompt.length > 60 
-                        ? `${row.prompt.substring(0, 60)}...` 
-                        : row.prompt}
-                    </TableCell>
-                    <TableCell>
-                      {new Date(row.timestamp).toLocaleString()}
-                    </TableCell>
-                    <TableCell>{row.model}</TableCell>
-                    <TableCell>{row.nodes}</TableCell>
-                    <TableCell>
-                      <Chip 
-                        label={row.status} 
-                        color={getStatusColor(row.status)} 
-                        size="small" 
-                      />
-                    </TableCell>
-                    <TableCell align="right">
-                      <IconButton 
-                        size="small" 
-                        onClick={() => handleViewHistoryItem(row.id)}
-                        color="primary"
-                      >
-                        <VisibilityIcon />
-                      </IconButton>
-                      <IconButton 
-                        size="small" 
-                        onClick={() => handleDeleteHistoryItem(row.id)}
-                        color="error"
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              {filteredHistory.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={6} align="center">
-                    <Typography variant="body1" sx={{ py: 2 }}>
-                      Історія запитів порожня або не знайдено результатів за вашим запитом
-                    </Typography>
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Запит</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Дата</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Модель</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Статус</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Дії</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {/* Приклад рядка таблиці */}
+              <tr>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">#1001</td>
+                <td className="px-6 py-4 text-sm text-gray-900 max-w-md truncate">
+                  Створити робочий процес для інтеграції з Google Drive
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  2023-03-22 14:30
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  GPT-4
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                    Успішно
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <button className="text-blue-500 hover:text-blue-700 mr-2">Переглянути</button>
+                  <button className="text-red-500 hover:text-red-700">Видалити</button>
+                </td>
+              </tr>
+              
+              <tr>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">#1002</td>
+                <td className="px-6 py-4 text-sm text-gray-900 max-w-md truncate">
+                  Створити робочий процес для надсилання щотижневих звітів електронною поштою
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  2023-03-21 10:15
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  Claude 3
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                    Успішно
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <button className="text-blue-500 hover:text-blue-700 mr-2">Переглянути</button>
+                  <button className="text-red-500 hover:text-red-700">Видалити</button>
+                </td>
+              </tr>
+              
+              <tr>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">#1003</td>
+                <td className="px-6 py-4 text-sm text-gray-900 max-w-md truncate">
+                  Робочий процес для моніторингу соціальних мереж
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  2023-03-20 09:45
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  Gemini Pro
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                    Помилка
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <button className="text-blue-500 hover:text-blue-700 mr-2">Переглянути</button>
+                  <button className="text-red-500 hover:text-red-700">Видалити</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
         
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={filteredHistory.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-          labelRowsPerPage="Рядків на сторінці:"
-          labelDisplayedRows={({ from, to, count }) => `${from}-${to} з ${count}`}
-        />
-      </Paper>
-    </Box>
+        <div className="mt-4 flex justify-between items-center">
+          <div className="text-sm text-gray-500">
+            Показано 3 з 20 записів
+          </div>
+          <div className="flex">
+            <button className="px-3 py-1 border rounded mr-2 bg-gray-100">Попередня</button>
+            <button className="px-3 py-1 border rounded bg-blue-500 text-white">Наступна</button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
