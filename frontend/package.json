@@ -2,6 +2,7 @@
   "name": "rechat-frontend",
   "version": "1.0.0",
   "description": "reChat - інтерфейс для роботи з n8n workflows",
+  "type": "module",
   "main": "index.js",
   "engines": {
     "node": "18.x"

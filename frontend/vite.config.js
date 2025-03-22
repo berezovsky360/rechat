@@ -1,5 +1,3 @@
-import React from 'react';
-import { createRoot } from 'react-dom/client';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
