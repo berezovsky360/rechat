@@ -21,6 +21,10 @@ import {
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import { CardDescription, CardFooter, CardHeader, CardTitle } from "../components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
+import { MoonIcon, SunIcon } from "../components/ui/icons";
 
 const SettingsPage = () => {
   const [openRouterKey, setOpenRouterKey] = useState('');
@@ -34,6 +38,14 @@ const SettingsPage = () => {
   const [saveSettings, setSaveSettings] = useState(true);
   const [demoMode, setDemoMode] = useState(true);
   const [apiMode, setApiMode] = useState('');
+  const [username, setUsername] = useState("Користувач");
+  const [email, setEmail] = useState("user@example.com");
+  const [theme, setTheme] = useState("system");
+  const [notifications, setNotifications] = useState(true);
+  const [tokenCount, setTokenCount] = useState(true);
+  const [streamResponse, setStreamResponse] = useState(true);
+  const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
+  const [languageModel, setLanguageModel] = useState("openai/gpt-3.5-turbo");
 
   // Отримання інформації про режим роботи при завантаженні
   useEffect(() => {
@@ -161,32 +173,307 @@ const SettingsPage = () => {
       });
   };
 
+  const handleSave = () => {
+    // Симуляція збереження налаштувань
+    console.log("Збереження налаштувань...");
+  };
+
+  const handleReset = () => {
+    // Симуляція скидання налаштувань
+    setUsername("Користувач");
+    setEmail("user@example.com");
+    setTheme("system");
+    setNotifications(true);
+    setTokenCount(true);
+    setStreamResponse(true);
+    setLanguageModel("openai/gpt-3.5-turbo");
+    setIsResetDialogOpen(false);
+  };
+
   return (
-    <Box>
-      <Typography variant="h4" gutterBottom>
-        Налаштування
-      </Typography>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold tracking-tight">Налаштування</h1>
+        <div className="flex space-x-2">
+          <Dialog open={isResetDialogOpen} onOpenChange={setIsResetDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">Скинути</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Скинути налаштування</DialogTitle>
+                <DialogDescription>
+                  Ви впевнені, що хочете скинути всі налаштування до значень за замовчуванням?
+                  Це не може бути скасовано.
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter className="gap-2 sm:justify-end">
+                <Button variant="outline" onClick={() => setIsResetDialogOpen(false)}>
+                  Скасувати
+                </Button>
+                <Button variant="destructive" onClick={handleReset}>
+                  Скинути
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          <Button onClick={handleSave}>Зберегти зміни</Button>
+        </div>
+      </div>
       
-      <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
-        <Typography variant="h6" gutterBottom>
-          Режим роботи
-        </Typography>
+      <Tabs defaultValue="general" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="general">Загальні</TabsTrigger>
+          <TabsTrigger value="appearance">Вигляд</TabsTrigger>
+          <TabsTrigger value="models">Моделі</TabsTrigger>
+          <TabsTrigger value="about">Про додаток</TabsTrigger>
+        </TabsList>
         
-        <Alert severity={demoMode ? "warning" : "success"} sx={{ mb: 2 }}>
-          Зараз активний {demoMode ? "демонстраційний режим з тестовими даними" : "повний режим з реальними API"}
-        </Alert>
+        <TabsContent value="general" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Профіль</CardTitle>
+              <CardDescription>
+                Керуйте своїми особистими даними та налаштуваннями.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="username" className="text-sm font-medium">
+                  Ім'я користувача
+                </label>
+                <Input
+                  id="username"
+                  placeholder="Ваше ім'я"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <label htmlFor="email" className="text-sm font-medium">
+                  Електронна пошта
+                </label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="email@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Сповіщення</CardTitle>
+              <CardDescription>
+                Налаштуйте як ви отримуєте сповіщення від додатку.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Сповіщення про завершення завдань</p>
+                  <p className="text-sm text-muted-foreground">
+                    Отримуйте сповіщення, коли ваші завдання завершуються.
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    className={`w-10 h-5 rounded-full relative ${
+                      notifications ? 'bg-primary' : 'bg-muted'
+                    } transition-colors`}
+                    onClick={() => setNotifications(!notifications)}
+                  >
+                    <span className={`block w-4 h-4 rounded-full bg-background absolute top-0.5 transition-transform ${
+                      notifications ? 'translate-x-5' : 'translate-x-0.5'
+                    }`} />
+                  </button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
         
-        <FormControlLabel
-          control={
-            <Switch 
-              checked={!demoMode} 
-              onChange={toggleDemoMode} 
-              color="primary"
-            />
-          }
-          label={!demoMode ? "Повний режим (реальні API)" : "Демо режим (тестові дані)"}
-        />
-      </Paper>
+        <TabsContent value="appearance" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Тема</CardTitle>
+              <CardDescription>
+                Налаштуйте зовнішній вигляд додатку.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="grid gap-6">
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  className={`flex flex-col items-center space-y-2 p-4 rounded-md border ${
+                    theme === 'light' ? 'border-primary' : 'border-border'
+                  }`}
+                  onClick={() => setTheme('light')}
+                >
+                  <div className="w-8 h-8 flex items-center justify-center rounded-full bg-muted">
+                    <SunIcon className="h-5 w-5" />
+                  </div>
+                  <div className="text-sm font-medium">Світла</div>
+                </button>
+                <button
+                  className={`flex flex-col items-center space-y-2 p-4 rounded-md border ${
+                    theme === 'dark' ? 'border-primary' : 'border-border'
+                  }`}
+                  onClick={() => setTheme('dark')}
+                >
+                  <div className="w-8 h-8 flex items-center justify-center rounded-full bg-muted">
+                    <MoonIcon className="h-5 w-5" />
+                  </div>
+                  <div className="text-sm font-medium">Темна</div>
+                </button>
+                <button
+                  className={`flex flex-col items-center space-y-2 p-4 rounded-md border ${
+                    theme === 'system' ? 'border-primary' : 'border-border'
+                  }`}
+                  onClick={() => setTheme('system')}
+                >
+                  <div className="w-8 h-8 flex items-center justify-center rounded-full bg-muted">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-5 w-5"
+                    >
+                      <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+                      <line x1="8" y1="21" x2="16" y2="21" />
+                      <line x1="12" y1="17" x2="12" y2="21" />
+                    </svg>
+                  </div>
+                  <div className="text-sm font-medium">Системна</div>
+                </button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="models" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Мовні моделі</CardTitle>
+              <CardDescription>
+                Налаштуйте моделі та параметри генерації відповідей.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">
+                  Модель за замовчуванням
+                </label>
+                <select
+                  className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                  value={languageModel}
+                  onChange={(e) => setLanguageModel(e.target.value)}
+                >
+                  <option value="openai/gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                  <option value="openai/gpt-4-turbo">GPT-4 Turbo</option>
+                  <option value="anthropic/claude-3-haiku-20240307">Claude 3 Haiku</option>
+                  <option value="anthropic/claude-3-sonnet-20240229">Claude 3 Sonnet</option>
+                  <option value="anthropic/claude-3-opus-20240229">Claude 3 Opus</option>
+                </select>
+              </div>
+              
+              <div className="flex items-center justify-between py-2">
+                <div>
+                  <p className="font-medium">Показувати кількість токенів</p>
+                  <p className="text-sm text-muted-foreground">
+                    Показувати кількість використаних токенів при генерації відповідей.
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    className={`w-10 h-5 rounded-full relative ${
+                      tokenCount ? 'bg-primary' : 'bg-muted'
+                    } transition-colors`}
+                    onClick={() => setTokenCount(!tokenCount)}
+                  >
+                    <span className={`block w-4 h-4 rounded-full bg-background absolute top-0.5 transition-transform ${
+                      tokenCount ? 'translate-x-5' : 'translate-x-0.5'
+                    }`} />
+                  </button>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between py-2">
+                <div>
+                  <p className="font-medium">Потокова відповідь</p>
+                  <p className="text-sm text-muted-foreground">
+                    Показувати відповідь по мірі її генерації.
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    className={`w-10 h-5 rounded-full relative ${
+                      streamResponse ? 'bg-primary' : 'bg-muted'
+                    } transition-colors`}
+                    onClick={() => setStreamResponse(!streamResponse)}
+                  >
+                    <span className={`block w-4 h-4 rounded-full bg-background absolute top-0.5 transition-transform ${
+                      streamResponse ? 'translate-x-5' : 'translate-x-0.5'
+                    }`} />
+                  </button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="about" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Про додаток</CardTitle>
+              <CardDescription>
+                Інформація про цей додаток та його можливості.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-1">
+                <h3 className="font-semibold text-lg">ReChat</h3>
+                <p className="text-sm">Версія 1.0.0</p>
+                <p className="text-sm text-muted-foreground">
+                  ReChat — це застосунок для спілкування з моделями штучного інтелекту з підтримкою OpenRouter та n8n інтеграцій.
+                </p>
+              </div>
+              
+              <div className="space-y-1">
+                <h3 className="font-semibold">Технології</h3>
+                <ul className="list-disc list-inside text-sm text-muted-foreground">
+                  <li>React</li>
+                  <li>Tailwind CSS</li>
+                  <li>shadcn/ui</li>
+                  <li>OpenRouter API</li>
+                  <li>n8n Workflow Automation</li>
+                </ul>
+              </div>
+              
+              <div className="space-y-1">
+                <h3 className="font-semibold">Можливості</h3>
+                <ul className="list-disc list-inside text-sm text-muted-foreground">
+                  <li>Спілкування з різними LLM моделями</li>
+                  <li>Інтеграція з OpenRouter</li>
+                  <li>Автоматизація процесів через n8n</li>
+                  <li>Детальні логи розмов та запитів</li>
+                  <li>Налаштування параметрів генерації</li>
+                </ul>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button variant="outline">Перевірити оновлення</Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+      </Tabs>
       
       <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
         <Typography variant="h6" gutterBottom>
@@ -337,7 +624,7 @@ const SettingsPage = () => {
           {snackbarMessage}
         </Alert>
       </Snackbar>
-    </Box>
+    </div>
   );
 };
 

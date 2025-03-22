@@ -1,85 +1,71 @@
 import React, { useState } from 'react';
-import { 
-  Drawer, 
-  List, 
-  ListItem, 
-  ListItemIcon, 
-  ListItemText, 
-  Divider,
-  Box,
-  Typography
-} from '@mui/material';
-import { useNavigate, useLocation } from 'react-router-dom';
-import ChatIcon from '@mui/icons-material/Chat';
-import HistoryIcon from '@mui/icons-material/History';
-import SettingsIcon from '@mui/icons-material/Settings';
-import TemplateIcon from '@mui/icons-material/Description';
-import LogsIcon from '@mui/icons-material/Assignment';
+import { Link, useLocation } from 'react-router-dom';
 
-const drawerWidth = 240;
-
-const Sidebar = ({ open }) => {
-  const navigate = useNavigate();
+export function Sidebar() {
   const location = useLocation();
+  const [isExpanded, setIsExpanded] = useState(false);
   
-  const menuItems = [
-    { text: 'Чат', icon: <ChatIcon />, path: '/' },
-    { text: 'Шаблони', icon: <TemplateIcon />, path: '/templates' },
-    { text: 'Історія', icon: <HistoryIcon />, path: '/history' },
-    { text: 'Логи', icon: <LogsIcon />, path: '/logs' },
-    { text: 'Налаштування', icon: <SettingsIcon />, path: '/settings' },
+  const navItems = [
+    { title: "Чат", path: "/", icon: "💬" },
+    { title: "OpenRouter", path: "/openrouter", icon: "🤖" },
+    { title: "n8n Workflows", path: "/n8n", icon: "🔄" },
+    { title: "Налаштування", path: "/settings", icon: "⚙️" },
+    { title: "Логи", path: "/logs", icon: "📊" }
   ];
 
   return (
-    <Drawer
-      variant="persistent"
-      anchor="left"
-      open={open}
-      sx={{
-        width: drawerWidth,
-        flexShrink: 0,
-        '& .MuiDrawer-paper': {
-          width: drawerWidth,
-          boxSizing: 'border-box',
-          top: '64px',
-          height: 'calc(100% - 64px)',
-        },
-      }}
+    <div 
+      className={`h-screen fixed left-0 top-0 z-40 transition-all duration-300 ease-in-out ${
+        isExpanded ? "w-64" : "w-16"
+      } bg-card border-r border-border shadow-md flex flex-col`}
     >
-      <Box sx={{ overflow: 'auto', mt: 2 }}>
-        <List>
-          {menuItems.map((item) => (
-            <ListItem 
-              button 
-              key={item.text} 
-              onClick={() => navigate(item.path)}
-              selected={location.pathname === item.path}
-              sx={{
-                '&.Mui-selected': {
-                  backgroundColor: 'rgba(63, 81, 181, 0.1)',
-                  '&:hover': {
-                    backgroundColor: 'rgba(63, 81, 181, 0.2)',
-                  },
-                },
-              }}
-            >
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.text} />
-            </ListItem>
+      <div className="p-4 flex items-center justify-between border-b border-border">
+        {isExpanded ? (
+          <h2 className="font-bold">ReChat</h2>
+        ) : (
+          <span className="font-bold mx-auto">RC</span>
+        )}
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="p-1 rounded-full hover:bg-muted"
+        >
+          {isExpanded ? "◀" : "▶"}
+        </button>
+      </div>
+      
+      <nav className="flex-1 overflow-y-auto py-4">
+        <ul className="space-y-2 px-2">
+          {navItems.map((item) => (
+            <li key={item.path}>
+              <Link 
+                to={item.path}
+                className={`flex items-center rounded-md p-2 hover:bg-muted/80 transition-colors ${
+                  location.pathname === item.path 
+                    ? "bg-primary text-primary-foreground" 
+                    : "text-foreground"
+                }`}
+              >
+                <span className="text-xl mr-3">{item.icon}</span>
+                {isExpanded && <span>{item.title}</span>}
+              </Link>
+            </li>
           ))}
-        </List>
-        <Divider sx={{ my: 2 }} />
-        <Box sx={{ px: 2, py: 1 }}>
-          <Typography variant="subtitle2" color="text.secondary">
-            reChat v1.0.0
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            Powered by n8n & OpenRouter
-          </Typography>
-        </Box>
-      </Box>
-    </Drawer>
+        </ul>
+      </nav>
+      
+      <div className="p-4 border-t border-border">
+        <div className="flex items-center">
+          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground mr-2">
+            U
+          </div>
+          {isExpanded && (
+            <div>
+              <div className="font-medium text-sm">Користувач</div>
+              <div className="text-xs text-muted-foreground">user@example.com</div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
-};
-
-export default Sidebar;
+}

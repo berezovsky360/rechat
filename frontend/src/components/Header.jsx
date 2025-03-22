@@ -1,47 +1,28 @@
-import React, { useState } from 'react';
-import { AppBar, Toolbar, Typography, IconButton, Box, Avatar, Badge } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import SettingsIcon from '@mui/icons-material/Settings';
-import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import { Button } from "./ui/button";
+import { MoonIcon, SunIcon } from "./ui/icons";
 
-const Header = ({ toggleSidebar }) => {
-  const navigate = useNavigate();
-  const [notificationsCount, setNotificationsCount] = useState(0);
-
-  const handleSettingsClick = () => {
-    navigate('/settings');
-  };
-
+export function Header({ toggleTheme, isDarkTheme }) {
   return (
-    <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
-      <Toolbar>
-        <IconButton
-          color="inherit"
-          aria-label="open drawer"
-          edge="start"
-          onClick={toggleSidebar}
-          sx={{ mr: 2 }}
-        >
-          <MenuIcon />
-        </IconButton>
-        <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-          reChat
-        </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <IconButton color="inherit" sx={{ mr: 1 }}>
-            <Badge badgeContent={notificationsCount} color="error">
-              <NotificationsIcon />
-            </Badge>
-          </IconButton>
-          <IconButton color="inherit" onClick={handleSettingsClick} sx={{ mr: 2 }}>
-            <SettingsIcon />
-          </IconButton>
-          <Avatar alt="User" src="/static/images/avatar/1.jpg" />
-        </Box>
-      </Toolbar>
-    </AppBar>
+    <header className="sticky top-0 z-30 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="flex h-14 items-center px-4 sm:px-6 lg:px-16">
+        <div className="ml-16 flex-1 flex justify-between items-center">
+          <div className="flex items-center space-x-4">
+            <h1 className="text-xl font-bold tracking-tight">ReChat</h1>
+            <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">v1.0.0</span>
+          </div>
+          <div className="flex items-center space-x-4">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={toggleTheme}
+              title={isDarkTheme ? "Переключити на світлу тему" : "Переключити на темну тему"}
+            >
+              {isDarkTheme ? <SunIcon className="h-5 w-5" /> : <MoonIcon className="h-5 w-5" />}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </header>
   );
-};
-
-export default Header;
+}
