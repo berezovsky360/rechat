@@ -80,25 +80,29 @@ export const modelCategories = {
 };
 
 // Функція для відправки повідомлення
-export const sendChatMessage = async (messages, model = 'openai/gpt-4o', maxTokens = 500) => {
+export const sendChatMessage = async (messages, model = 'openai/gpt-4o', maxTokens = 500, temperature = 0.7, customApiKey = null) => {
   try {
+    // Використовуємо переданий API ключ або берем з налаштувань
+    const currentApiKey = customApiKey || API_KEY;
+    
     // Перевірка наявності API ключа
-    if (!API_KEY) {
-      throw new Error('OpenRouter API ключ не знайдено. Будь ласка, додайте VITE_OPENROUTER_API_KEY до .env файлу.');
+    if (!currentApiKey) {
+      throw new Error('OpenRouter API ключ не знайдено. Будь ласка, додайте VITE_OPENROUTER_API_KEY до .env файлу або передайте ключ у параметрах.');
     }
 
     const response = await fetch(`${BASE_URL}/chat/completions`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${API_KEY}`,
+        'Authorization': `Bearer ${currentApiKey}`,
         'HTTP-Referer': window.location.origin, // Важливо для обліку використання API
         'X-Title': 'ReChat'
       },
       body: JSON.stringify({
         model,
         messages,
-        max_tokens: maxTokens
+        max_tokens: maxTokens,
+        temperature: temperature
       })
     });
 

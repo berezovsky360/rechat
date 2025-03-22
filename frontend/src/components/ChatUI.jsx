@@ -5,6 +5,8 @@ import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { SendIcon, UserIcon, BotIcon, ClearIcon, CopyIcon, CheckIcon } from "./ui/icons";
+import { sendChatMessage, openRouterModels } from '../utils/openRouter';
+import { executeWorkflow, convertChatToWorkflow, createWorkflow } from '../utils/n8nApi';
 
 export default function ChatUI() {
   const [messages, setMessages] = useState([]);
@@ -12,6 +14,8 @@ export default function ChatUI() {
   const [isLoading, setIsLoading] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [copyState, setCopyState] = useState({});
+  const [workflowJson, setWorkflowJson] = useState(null);
+  const [workflowCreated, setWorkflowCreated] = useState(false);
   const messagesEndRef = useRef(null);
   
   // Налаштування чату
@@ -20,8 +24,10 @@ export default function ChatUI() {
     model: "openai/gpt-3.5-turbo",
     temperature: 0.7,
     maxTokens: 2000,
-    apiKey: "",
-    n8nWorkflow: "",
+    apiKey: localStorage.getItem('openrouter_api_key') || "",
+    n8nUrl: localStorage.getItem('n8n_api_url') || "",
+    n8nApiKey: localStorage.getItem('n8n_api_key') || "",
+    n8nWorkflow: localStorage.getItem('n8n_workflow_id') || "",
     systemPrompt: "Ви корисний асистент, який відповідає українською мовою.",
     streamResponse: true
   });
@@ -44,6 +50,14 @@ export default function ChatUI() {
     scrollToBottom();
   }, [messages]);
 
+  useEffect(() => {
+    // Зберігаємо ключі в localStorage
+    if (settings.apiKey) localStorage.setItem('openrouter_api_key', settings.apiKey);
+    if (settings.n8nUrl) localStorage.setItem('n8n_api_url', settings.n8nUrl);
+    if (settings.n8nApiKey) localStorage.setItem('n8n_api_key', settings.n8nApiKey);
+    if (settings.n8nWorkflow) localStorage.setItem('n8n_workflow_id', settings.n8nWorkflow);
+  }, [settings]);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -60,37 +74,73 @@ export default function ChatUI() {
     setMessages([...messages, userMessage]);
     setNewMessage("");
     setIsLoading(true);
+    setWorkflowCreated(false);
+    setWorkflowJson(null);
 
     try {
-      // Симуляція API-запиту в залежності від провайдера
       let botResponse;
       
       if (settings.provider === "openrouter") {
-        // Симуляція OpenRouter API
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        // Реальний запит до OpenRouter API
+        const allMessages = [
+          { role: "system", content: settings.systemPrompt },
+          ...messages.filter(m => m.role === "user" || m.role === "assistant"),
+          userMessage
+        ];
+        
+        const apiResponse = await sendChatMessage(
+          allMessages, 
+          settings.model, 
+          settings.maxTokens,
+          settings.temperature,
+          settings.apiKey
+        );
+        
         botResponse = {
           role: "assistant",
-          content: `Це відповідь від моделі ${settings.model.split('/')[1]} через OpenRouter. Ваше повідомлення: "${newMessage}"`,
+          content: apiResponse.choices[0].message.content,
           timestamp: new Date().toISOString(),
-          model: settings.model
+          model: apiResponse.model
         };
       } else {
-        // Симуляція n8n Workflow
-        await new Promise(resolve => setTimeout(resolve, 1200));
+        // Запит до n8n workflow
+        if (!settings.n8nWorkflow) {
+          throw new Error("ID робочого процесу n8n не вказано. Будь ласка, додайте його в налаштуваннях.");
+        }
+        
+        // Надсилаємо останнє повідомлення користувача до n8n workflow
+        const apiResponse = await executeWorkflow(settings.n8nWorkflow, { 
+          message: newMessage,
+          allMessages: messages.concat(userMessage)
+        });
+        
         botResponse = {
           role: "assistant",
-          content: `Це відповідь через n8n workflow. Ваше повідомлення: "${newMessage}"`,
+          content: apiResponse.data?.output || "Відповідь отримана, але не містить даних.",
           timestamp: new Date().toISOString(),
           workflowId: settings.n8nWorkflow
         };
       }
       
       setMessages(prev => [...prev, botResponse]);
+      
+      // Якщо останнє повідомлення містить JSON структуру для workflow, зберігаємо її
+      try {
+        // Шукаємо JSON у відповіді
+        const jsonMatch = botResponse.content.match(/```json\n([\s\S]*?)\n```/);
+        if (jsonMatch && jsonMatch[1]) {
+          const workflowData = JSON.parse(jsonMatch[1]);
+          setWorkflowJson(workflowData);
+        }
+      } catch (e) {
+        console.log("Не вдалося розпізнати JSON у відповіді");
+      }
+      
     } catch (error) {
       // Обробка помилок
       setMessages(prev => [...prev, {
         role: "error",
-        content: "Сталася помилка при надсиланні повідомлення. Будь ласка, спробуйте ще раз або змініть налаштування.",
+        content: `Помилка: ${error.message}`,
         timestamp: new Date().toISOString()
       }]);
     } finally {
@@ -98,8 +148,51 @@ export default function ChatUI() {
     }
   };
 
+  const handleCreateWorkflow = async () => {
+    if (!workflowJson) {
+      // Створюємо workflow з повідомлень
+      try {
+        const workflow = convertChatToWorkflow(messages);
+        const result = await createWorkflow(workflow);
+        setWorkflowCreated(true);
+        
+        setMessages(prev => [...prev, {
+          role: "system",
+          content: `Workflow успішно створено! ID: ${result.id}`,
+          timestamp: new Date().toISOString()
+        }]);
+      } catch (error) {
+        setMessages(prev => [...prev, {
+          role: "error",
+          content: `Помилка при створенні workflow: ${error.message}`,
+          timestamp: new Date().toISOString()
+        }]);
+      }
+    } else {
+      // Якщо у нас є JSON для workflow, використовуємо його
+      try {
+        const result = await createWorkflow(workflowJson);
+        setWorkflowCreated(true);
+        
+        setMessages(prev => [...prev, {
+          role: "system",
+          content: `Workflow успішно створено з JSON! ID: ${result.id}`,
+          timestamp: new Date().toISOString()
+        }]);
+      } catch (error) {
+        setMessages(prev => [...prev, {
+          role: "error",
+          content: `Помилка при створенні workflow з JSON: ${error.message}`,
+          timestamp: new Date().toISOString()
+        }]);
+      }
+    }
+  };
+
   const handleClearChat = () => {
     setMessages([]);
+    setWorkflowJson(null);
+    setWorkflowCreated(false);
   };
 
   const handleKeyDown = (e) => {
@@ -134,12 +227,27 @@ export default function ChatUI() {
     }).format(date);
   };
 
+  // Додаємо detectWorkflowJson для пошуку JSON структури
+  const hasWorkflowData = () => {
+    return workflowJson !== null;
+  };
+
   return (
     <div className="h-[calc(100vh-3.5rem)] flex flex-col">
       {/* Заголовок чату */}
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Чат</h1>
         <div className="flex gap-2">
+          {(messages.length > 0 && settings.provider === "n8n") && (
+            <Button 
+              variant={workflowCreated ? "outline" : "default"} 
+              size="sm" 
+              onClick={handleCreateWorkflow}
+              disabled={workflowCreated}
+            >
+              {workflowCreated ? "Workflow створено" : hasWorkflowData() ? "Створити з JSON" : "Створити Workflow"}
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={handleClearChat} disabled={messages.length === 0}>
             <ClearIcon className="h-4 w-4 mr-2" />
             Очистити
@@ -168,11 +276,13 @@ export default function ChatUI() {
                       <UserIcon className="h-4 w-4" />
                     ) : message.role === 'error' ? (
                       <span className="text-red-500">⚠️</span>
+                    ) : message.role === 'system' ? (
+                      <span className="text-blue-500">ℹ️</span>
                     ) : (
                       <BotIcon className="h-4 w-4" />
                     )}
                     <span className="text-xs font-medium">
-                      {message.role === 'user' ? 'Ви' : message.role === 'error' ? 'Помилка' : 'Асистент'}
+                      {message.role === 'user' ? 'Ви' : message.role === 'error' ? 'Помилка' : message.role === 'system' ? 'Система' : 'Асистент'}
                     </span>
                     <span className="text-xs text-muted-foreground ml-auto">
                       {formatDate(message.timestamp)}
@@ -298,18 +408,43 @@ export default function ChatUI() {
               )}
               
               {settings.provider === 'n8n' && (
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">
-                    ID робочого процесу n8n
-                  </label>
-                  <Input
-                    placeholder="123"
-                    value={settings.n8nWorkflow}
-                    onChange={(e) => updateSettings('n8nWorkflow', e.target.value)}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Введіть ID робочого процесу з вашого n8n сервера
-                  </p>
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">
+                      URL n8n серверу
+                    </label>
+                    <Input
+                      placeholder="https://your-n8n-instance.com"
+                      value={settings.n8nUrl}
+                      onChange={(e) => updateSettings('n8nUrl', e.target.value)}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">
+                      n8n API ключ
+                    </label>
+                    <Input
+                      type="password"
+                      placeholder="n8n_api_..."
+                      value={settings.n8nApiKey}
+                      onChange={(e) => updateSettings('n8nApiKey', e.target.value)}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">
+                      ID робочого процесу n8n
+                    </label>
+                    <Input
+                      placeholder="123"
+                      value={settings.n8nWorkflow}
+                      onChange={(e) => updateSettings('n8nWorkflow', e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Введіть ID робочого процесу з вашого n8n сервера
+                    </p>
+                  </div>
                 </div>
               )}
             </TabsContent>
@@ -398,29 +533,8 @@ export default function ChatUI() {
                   <span className="text-xs">4000</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Максимальна довжина відповіді в токенах
+                  Максимальна довжина відповіді
                 </p>
-              </div>
-              
-              <div className="flex items-center justify-between py-2">
-                <div>
-                  <p className="font-medium text-sm">Потокова відповідь</p>
-                  <p className="text-xs text-muted-foreground">
-                    Показувати відповідь по мірі її генерації
-                  </p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <button
-                    className={`w-10 h-5 rounded-full relative ${
-                      settings.streamResponse ? 'bg-primary' : 'bg-muted'
-                    } transition-colors`}
-                    onClick={() => updateSettings('streamResponse', !settings.streamResponse)}
-                  >
-                    <span className={`block w-4 h-4 rounded-full bg-background absolute top-0.5 transition-transform ${
-                      settings.streamResponse ? 'translate-x-5' : 'translate-x-0.5'
-                    }`} />
-                  </button>
-                </div>
               </div>
             </TabsContent>
           </Tabs>
