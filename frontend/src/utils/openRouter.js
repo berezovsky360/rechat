@@ -1,8 +1,19 @@
 // Файл для роботи з OpenRouter API
 
-// Отримання API ключа (спочатку з LocalStorage, потім з .env)
+// Отримання API ключа (спочатку з LocalStorage, потім з .env, потім з Supabase якщо налаштовано)
 const getApiKey = () => {
-  return localStorage.getItem('openrouter_api_key') || import.meta.env.VITE_OPENROUTER_API_KEY || '';
+  // Спочатку перевіряємо localStorage, потім env змінні
+  const localKey = localStorage.getItem('openrouter_api_key');
+  if (localKey) return localKey;
+  
+  const envKey = import.meta.env.VITE_OPENROUTER_API_KEY;
+  if (envKey) return envKey;
+  
+  // Якщо Supabase налаштовано, можна спробувати отримати звідти
+  const supabaseKey = localStorage.getItem('supabase_openrouter_key');
+  if (supabaseKey) return supabaseKey;
+  
+  return '';
 };
 const BASE_URL = 'https://openrouter.ai/api/v1';
 

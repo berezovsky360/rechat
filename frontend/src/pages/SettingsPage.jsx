@@ -25,6 +25,8 @@ import { CardDescription, CardFooter, CardHeader, CardTitle } from "../component
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
 import { MoonIcon, SunIcon } from "../components/ui/icons";
+import { getSupabaseClient } from '../utils/supabase';
+import { createClient } from '@supabase/supabase-js';
 
 const SettingsPage = () => {
   const [openRouterKey, setOpenRouterKey] = useState(localStorage.getItem('openrouter_api_key') || '');
@@ -46,6 +48,8 @@ const SettingsPage = () => {
   const [streamResponse, setStreamResponse] = useState(localStorage.getItem('stream_response') !== 'false');
   const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
   const [languageModel, setLanguageModel] = useState(localStorage.getItem('language_model') || "openai/gpt-3.5-turbo");
+  const [supabaseUrl, setSupabaseUrl] = useState(localStorage.getItem('supabase_url') || import.meta.env.VITE_SUPABASE_URL || '');
+  const [supabaseKey, setSupabaseKey] = useState(localStorage.getItem('supabase_key') || import.meta.env.VITE_SUPABASE_ANON_KEY || '');
 
   // Отримання інформації про режим роботи при завантаженні
   useEffect(() => {
@@ -144,6 +148,48 @@ const SettingsPage = () => {
     }, 1500);
   };
 
+  // Функція для тестування з'єднання з Supabase
+  const testSupabaseConnection = () => {
+    if (!supabaseUrl || !supabaseKey) {
+      setSnackbarMessage('Будь ласка, введіть URL та ключ Supabase');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+      return;
+    }
+
+    setTestingConnection(true);
+    
+    try {
+      // Створюємо тимчасовий клієнт Supabase для тестування
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      
+      // Спробуємо отримати інформацію про проект
+      supabase.from('templates').select('count', { count: 'exact', head: true })
+        .then(({ error }) => {
+          setTestingConnection(false);
+          
+          if (error) {
+            setSnackbarMessage('Помилка при з\'єднанні з Supabase: ' + error.message);
+            setSnackbarSeverity('error');
+          } else {
+            setSnackbarMessage('З\'єднання з Supabase успішно встановлено');
+            setSnackbarSeverity('success');
+            
+            // Зберігаємо ключі в localStorage
+            localStorage.setItem('supabase_url', supabaseUrl);
+            localStorage.setItem('supabase_key', supabaseKey);
+          }
+          
+          setSnackbarOpen(true);
+        });
+    } catch (error) {
+      setTestingConnection(false);
+      setSnackbarMessage('Помилка при з\'єднанні з Supabase: ' + error.message);
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    }
+  };
+
   // Збереження налаштувань
   const saveAllSettings = () => {
     // Збереження всіх налаштувань в localStorage
@@ -159,6 +205,17 @@ const SettingsPage = () => {
     localStorage.setItem('token_count', tokenCount.toString());
     localStorage.setItem('stream_response', streamResponse.toString());
     localStorage.setItem('language_model', languageModel);
+    
+    // Додаємо збереження налаштувань Supabase
+    if (supabaseUrl) localStorage.setItem('supabase_url', supabaseUrl);
+    if (supabaseKey) localStorage.setItem('supabase_key', supabaseKey);
+    
+    // Спробуємо зберегти налаштування в Supabase, якщо з'єднання налаштоване
+    const supabase = getSupabaseClient();
+    if (supabase) {
+      // Можна зберегти налаштування в таблиці налаштувань користувача
+      // якщо така таблиця існує в Supabase
+    }
 
     setSnackbarMessage('Налаштування успішно збережено');
     setSnackbarSeverity('success');
@@ -218,45 +275,18 @@ const SettingsPage = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight">Налаштування</h1>
-        <div className="flex space-x-2">
-          <Dialog open={isResetDialogOpen} onOpenChange={setIsResetDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline">Скинути</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Скинути налаштування</DialogTitle>
-                <DialogDescription>
-                  Ви впевнені, що хочете скинути всі налаштування до значень за замовчуванням?
-                  Це не може бути скасовано.
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter className="gap-2 sm:justify-end">
-                <Button variant="outline" onClick={() => setIsResetDialogOpen(false)}>
-                  Скасувати
-                </Button>
-                <Button variant="destructive" onClick={handleReset}>
-                  Скинути
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-          <Button onClick={handleSave}>Зберегти зміни</Button>
-        </div>
-      </div>
+    <div className="container mx-auto px-4 py-6">
+      <h1 className="text-2xl font-bold text-gray-800 dark:text-white mb-8">Налаштування</h1>
       
-      <Tabs defaultValue="general" className="space-y-4">
-        <TabsList>
+      <Tabs defaultValue="general" className="mb-8">
+        <TabsList className="mb-4">
           <TabsTrigger value="general">Загальні</TabsTrigger>
-          <TabsTrigger value="appearance">Вигляд</TabsTrigger>
-          <TabsTrigger value="models">Моделі</TabsTrigger>
-          <TabsTrigger value="about">Про додаток</TabsTrigger>
+          <TabsTrigger value="integration">Інтеграції</TabsTrigger>
+          <TabsTrigger value="profile">Профіль</TabsTrigger>
+          <TabsTrigger value="appearance">Зовнішній вигляд</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="general" className="space-y-4">
+        <TabsContent value="general">
           <Card>
             <CardHeader>
               <CardTitle>Профіль</CardTitle>
@@ -324,7 +354,140 @@ const SettingsPage = () => {
           </Card>
         </TabsContent>
         
-        <TabsContent value="appearance" className="space-y-4">
+        <TabsContent value="integration">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <Card>
+              <CardHeader>
+                <CardTitle>OpenRouter</CardTitle>
+                <CardDescription>
+                  Налаштування підключення до OpenRouter API
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <TextField
+                  fullWidth
+                  label="API ключ"
+                  margin="normal"
+                  type="password"
+                  value={openRouterKey}
+                  onChange={(e) => setOpenRouterKey(e.target.value)}
+                  variant="outlined"
+                  placeholder="sk-or-v1-..."
+                />
+                <FormControl fullWidth margin="normal">
+                  <InputLabel>Модель</InputLabel>
+                  <Select
+                    value={selectedModel}
+                    onChange={(e) => setSelectedModel(e.target.value)}
+                    label="Модель"
+                  >
+                    {models.map((model) => (
+                      <MenuItem key={model.id} value={model.id}>
+                        {model.name} ({model.company})
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </CardContent>
+              <CardFooter>
+                <Button
+                  onClick={testOpenRouterConnection}
+                  variant="contained"
+                  startIcon={testingConnection ? <CircularProgress size={20} /> : <CheckCircleIcon />}
+                  disabled={testingConnection}
+                >
+                  {testingConnection ? 'Перевірка...' : 'Перевірити з\'єднання'}
+                </Button>
+              </CardFooter>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>Supabase</CardTitle>
+                <CardDescription>
+                  Налаштування підключення до Supabase для зберігання шаблонів і історії
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <TextField
+                  fullWidth
+                  label="URL проекту"
+                  margin="normal"
+                  value={supabaseUrl}
+                  onChange={(e) => setSupabaseUrl(e.target.value)}
+                  variant="outlined"
+                  placeholder="https://your-project.supabase.co"
+                />
+                <TextField
+                  fullWidth
+                  label="Anon ключ"
+                  margin="normal"
+                  type="password"
+                  value={supabaseKey}
+                  onChange={(e) => setSupabaseKey(e.target.value)}
+                  variant="outlined"
+                  placeholder="eyJhbGciOiJIUzI1NiIs..."
+                />
+              </CardContent>
+              <CardFooter>
+                <Button
+                  onClick={testSupabaseConnection}
+                  variant="contained"
+                  startIcon={testingConnection ? <CircularProgress size={20} /> : <CheckCircleIcon />}
+                  disabled={testingConnection}
+                >
+                  {testingConnection ? 'Перевірка...' : 'Перевірити з\'єднання'}
+                </Button>
+              </CardFooter>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>n8n</CardTitle>
+                <CardDescription>
+                  Налаштування підключення до n8n для автоматизації робочих процесів
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <TextField
+                  fullWidth
+                  label="API URL"
+                  margin="normal"
+                  value={n8nApiUrl}
+                  onChange={(e) => setN8nApiUrl(e.target.value)}
+                  variant="outlined"
+                  placeholder="https://n8n.yourdomain.com/api"
+                />
+                <TextField
+                  fullWidth
+                  label="API ключ"
+                  margin="normal"
+                  type="password"
+                  value={n8nApiKey}
+                  onChange={(e) => setN8nApiKey(e.target.value)}
+                  variant="outlined"
+                  placeholder="n8n_api_..."
+                />
+              </CardContent>
+              <CardFooter>
+                <Button
+                  onClick={testN8nConnection}
+                  variant="contained"
+                  startIcon={testingConnection ? <CircularProgress size={20} /> : <CheckCircleIcon />}
+                  disabled={testingConnection}
+                >
+                  {testingConnection ? 'Перевірка...' : 'Перевірити з\'єднання'}
+                </Button>
+              </CardFooter>
+            </Card>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="profile">
+          {/* Існуючий контент для профілю */}
+        </TabsContent>
+        
+        <TabsContent value="appearance">
           <Card>
             <CardHeader>
               <CardTitle>Тема</CardTitle>
@@ -382,122 +545,6 @@ const SettingsPage = () => {
                 </button>
               </div>
             </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="models" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Мовні моделі</CardTitle>
-              <CardDescription>
-                Налаштуйте моделі та параметри генерації відповідей.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  Модель за замовчуванням
-                </label>
-                <select
-                  className={`w-full rounded-md border border-gray-200 dark:border-gray-700 bg-background px-3 py-2 text-sm`}
-                  value={languageModel}
-                  onChange={(e) => setLanguageModel(e.target.value)}
-                >
-                  <option value="openai/gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                  <option value="openai/gpt-4-turbo">GPT-4 Turbo</option>
-                  <option value="anthropic/claude-3-haiku-20240307">Claude 3 Haiku</option>
-                  <option value="anthropic/claude-3-sonnet-20240229">Claude 3 Sonnet</option>
-                  <option value="anthropic/claude-3-opus-20240229">Claude 3 Opus</option>
-                </select>
-              </div>
-              
-              <div className="flex items-center justify-between py-2">
-                <div>
-                  <p className="font-medium">Показувати кількість токенів</p>
-                  <p className="text-sm text-muted-foreground">
-                    Показувати кількість використаних токенів при генерації відповідей.
-                  </p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <button
-                    className={`w-10 h-5 rounded-full relative ${
-                      tokenCount ? 'bg-primary' : 'bg-muted'
-                    } transition-colors`}
-                    onClick={() => setTokenCount(!tokenCount)}
-                  >
-                    <span className={`block w-4 h-4 rounded-full bg-background absolute top-0.5 transition-transform ${
-                      tokenCount ? 'translate-x-5' : 'translate-x-0.5'
-                    }`} />
-                  </button>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-between py-2">
-                <div>
-                  <p className="font-medium">Потокова відповідь</p>
-                  <p className="text-sm text-muted-foreground">
-                    Показувати відповідь по мірі її генерації.
-                  </p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <button
-                    className={`w-10 h-5 rounded-full relative ${
-                      streamResponse ? 'bg-primary' : 'bg-muted'
-                    } transition-colors`}
-                    onClick={() => setStreamResponse(!streamResponse)}
-                  >
-                    <span className={`block w-4 h-4 rounded-full bg-background absolute top-0.5 transition-transform ${
-                      streamResponse ? 'translate-x-5' : 'translate-x-0.5'
-                    }`} />
-                  </button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="about" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Про додаток</CardTitle>
-              <CardDescription>
-                Інформація про цей додаток та його можливості.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-1">
-                <h3 className="font-semibold text-lg">ReChat</h3>
-                <p className="text-sm">Версія 1.0.0</p>
-                <p className="text-sm text-muted-foreground">
-                  ReChat — це застосунок для спілкування з моделями штучного інтелекту з підтримкою OpenRouter та n8n інтеграцій.
-                </p>
-              </div>
-              
-              <div className="space-y-1">
-                <h3 className="font-semibold">Технології</h3>
-                <ul className="list-disc list-inside text-sm text-muted-foreground">
-                  <li>React</li>
-                  <li>Tailwind CSS</li>
-                  <li>shadcn/ui</li>
-                  <li>OpenRouter API</li>
-                  <li>n8n Workflow Automation</li>
-                </ul>
-              </div>
-              
-              <div className="space-y-1">
-                <h3 className="font-semibold">Можливості</h3>
-                <ul className="list-disc list-inside text-sm text-muted-foreground">
-                  <li>Спілкування з різними LLM моделями</li>
-                  <li>Інтеграція з OpenRouter</li>
-                  <li>Автоматизація процесів через n8n</li>
-                  <li>Детальні логи розмов та запитів</li>
-                  <li>Налаштування параметрів генерації</li>
-                </ul>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button variant="outline">Перевірити оновлення</Button>
-            </CardFooter>
           </Card>
         </TabsContent>
       </Tabs>
