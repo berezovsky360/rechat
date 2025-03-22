@@ -90,15 +90,15 @@ const ChatPage = () => {
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-6 text-gray-800 dark:text-gray-100">Чат</h1>
       
-      <div className="bg-white dark:bg-dark-card rounded-lg shadow-md dark:shadow-dark overflow-hidden border border-gray-200 dark:border-dark-border">
-        <div className="p-4 border-b border-gray-200 dark:border-dark-border">
+      <div className="bg-white dark:bg-dark-card rounded-lg shadow-md dark:shadow-dark overflow-hidden border border-gray-200 dark:border-gray-700">
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">Новий запит</h2>
         </div>
         
         {/* Область чату */}
         <div 
           ref={chatContainerRef}
-          className="h-96 p-4 overflow-y-auto border-b border-gray-200 dark:border-dark-border bg-gray-50 dark:bg-dark-bg/50"
+          className="h-96 p-4 overflow-y-auto border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-dark-bg/50"
         >
           {messages.map(message => (
             <div key={message.id} className={`mb-4 flex items-start ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -114,7 +114,7 @@ const ChatPage = () => {
                 message.role === 'user' 
                   ? 'bg-blue-100 dark:bg-blue-900/20 text-gray-800 dark:text-gray-100' 
                   : message.role === 'assistant'
-                    ? 'bg-white dark:bg-dark-card text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-dark-border'
+                    ? 'bg-white dark:bg-dark-card text-gray-800 dark:text-gray-100 border border-gray-200 dark:border-gray-700'
                     : 'bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-300'
               }`}>
                 <p className="text-sm whitespace-pre-wrap">{message.content}</p>
@@ -148,7 +148,7 @@ const ChatPage = () => {
           <form onSubmit={handleSubmit}>
             <div className="flex">
               <textarea 
-                className="flex-1 p-2 border dark:border-dark-border rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-dark-card dark:text-gray-100 resize-none" 
+                className="flex-1 p-2 border dark:border-gray-700 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-dark-card dark:text-gray-100 resize-none" 
                 rows="2" 
                 placeholder="Введіть ваш запит тут..."
                 value={input}

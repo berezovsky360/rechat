@@ -43,7 +43,7 @@ const ModelSelector = ({ selectedModel, onModelChange }) => {
       <div className="flex items-center">
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center space-x-2 rounded-lg p-2 border border-gray-200 dark:border-dark-border text-sm text-gray-700 dark:text-dark-text-primary hover:bg-gray-50 dark:hover:bg-dark-card transition-colors"
+          className="flex items-center space-x-2 rounded-lg p-2 border border-gray-200 dark:border-gray-700 text-sm text-gray-700 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-dark-card transition-colors"
         >
           <span className="text-gray-800 dark:text-gray-200">{currentModel.name}</span>
           <span className="text-xs text-gray-500 dark:text-gray-400">{currentModel.provider}</span>
@@ -54,7 +54,7 @@ const ModelSelector = ({ selectedModel, onModelChange }) => {
       </div>
 
       {isOpen && (
-        <div className="absolute left-0 mt-2 w-72 rounded-md shadow-lg bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border z-10">
+        <div className="absolute left-0 mt-2 w-72 rounded-md shadow-lg bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700 z-10">
           <div className="p-2 max-h-96 overflow-y-auto">
             {Object.keys(groupedModels).map(category => (
               <div key={category} className="mb-3">

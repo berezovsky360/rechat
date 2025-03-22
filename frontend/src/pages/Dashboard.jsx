@@ -7,7 +7,7 @@ const Dashboard = () => {
       <h1 className="text-3xl font-bold mb-6 text-gray-800 dark:text-gray-100">Панель керування</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div className="bg-white dark:bg-dark-card p-6 rounded-lg shadow-md dark:shadow-dark border border-gray-200 dark:border-dark-border">
+        <div className="bg-white dark:bg-dark-card p-6 rounded-lg shadow-md dark:shadow-dark border border-gray-200 dark:border-gray-700">
           <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">Новий чат</h2>
           <p className="text-gray-600 dark:text-gray-300 mb-4">Розпочніть новий чат для створення робочого процесу</p>
           <Link 
@@ -18,7 +18,7 @@ const Dashboard = () => {
           </Link>
         </div>
         
-        <div className="bg-white dark:bg-dark-card p-6 rounded-lg shadow-md dark:shadow-dark border border-gray-200 dark:border-dark-border">
+        <div className="bg-white dark:bg-dark-card p-6 rounded-lg shadow-md dark:shadow-dark border border-gray-200 dark:border-gray-700">
           <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">Шаблони</h2>
           <p className="text-gray-600 dark:text-gray-300 mb-4">Перегляньте готові шаблони робочих процесів</p>
           <Link 
@@ -29,7 +29,7 @@ const Dashboard = () => {
           </Link>
         </div>
         
-        <div className="bg-white dark:bg-dark-card p-6 rounded-lg shadow-md dark:shadow-dark border border-gray-200 dark:border-dark-border">
+        <div className="bg-white dark:bg-dark-card p-6 rounded-lg shadow-md dark:shadow-dark border border-gray-200 dark:border-gray-700">
           <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">Історія</h2>
           <p className="text-gray-600 dark:text-gray-300 mb-4">Перегляньте попередні запити та створені процеси</p>
           <Link 
@@ -41,7 +41,7 @@ const Dashboard = () => {
         </div>
       </div>
       
-      <div className="mt-10 bg-white dark:bg-dark-card p-6 rounded-lg shadow-md dark:shadow-dark border border-gray-200 dark:border-dark-border">
+      <div className="mt-10 bg-white dark:bg-dark-card p-6 rounded-lg shadow-md dark:shadow-dark border border-gray-200 dark:border-gray-700">
         <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">Статистика</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="text-center p-4 bg-gray-50 dark:bg-dark-bg rounded">

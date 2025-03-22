@@ -72,13 +72,13 @@ const Layout = () => {
 
       {/* Бічна панель */}
       <aside 
-        className={`fixed inset-y-0 left-0 z-20 w-64 transform bg-white dark:bg-dark-card border-r border-gray-200 dark:border-dark-border shadow-lg dark:shadow-dark transition-transform duration-300 lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-20 w-64 transform bg-white dark:bg-dark-card border-r border-gray-200 dark:border-gray-700 shadow-lg dark:shadow-dark transition-transform duration-300 lg:static lg:translate-x-0 ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="flex h-full flex-col">
           {/* Логотип */}
-          <div className="flex h-16 items-center justify-center border-b border-gray-200 dark:border-dark-border">
+          <div className="flex h-16 items-center justify-center border-b border-gray-200 dark:border-gray-700">
             <span className="text-2xl font-bold text-blue-600 dark:text-blue-500">ReChat</span>
           </div>
 
@@ -105,7 +105,7 @@ const Layout = () => {
           </nav>
 
           {/* Футер сайдбара */}
-          <div className="border-t border-gray-200 dark:border-dark-border p-4">
+          <div className="border-t border-gray-200 dark:border-gray-700 p-4">
             <Link
               to="/settings"
               className="flex items-center rounded-lg p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-border/50"
@@ -123,7 +123,7 @@ const Layout = () => {
       {/* Основний контент */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Верхня панель */}
-        <header className="flex h-16 items-center justify-between border-b border-gray-200 dark:border-dark-border bg-white dark:bg-dark-card px-6">
+        <header className="flex h-16 items-center justify-between border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-dark-card px-6">
           {/* Кнопка відкриття/закриття сайдбара (мобільна) */}
           <button
             onClick={toggleSidebar}
