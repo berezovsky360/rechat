@@ -123,13 +123,15 @@ export const sendChatMessage = async (messages, model = 'openai/gpt-4o', maxToke
 // Функція для отримання списку доступних моделей з API
 export const fetchAvailableModels = async () => {
   try {
-    if (!API_KEY) {
-      throw new Error('OpenRouter API ключ не знайдено');
+    const currentApiKey = getApiKey();
+    
+    if (!currentApiKey) {
+      throw new Error('OpenRouter API ключ не знайдено. Додайте API ключ у налаштуваннях.');
     }
 
     const response = await fetch(`${BASE_URL}/models`, {
       headers: {
-        'Authorization': `Bearer ${API_KEY}`,
+        'Authorization': `Bearer ${currentApiKey}`,
         'HTTP-Referer': window.location.origin
       }
     });

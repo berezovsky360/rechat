@@ -56,6 +56,12 @@ export default function ChatUI() {
     if (settings.n8nUrl) localStorage.setItem('n8n_api_url', settings.n8nUrl);
     if (settings.n8nApiKey) localStorage.setItem('n8n_api_key', settings.n8nApiKey);
     if (settings.n8nWorkflow) localStorage.setItem('n8n_workflow_id', settings.n8nWorkflow);
+    
+    // Зберігаємо інші налаштування
+    localStorage.setItem('chat_model', settings.model);
+    localStorage.setItem('chat_temperature', settings.temperature.toString());
+    localStorage.setItem('chat_max_tokens', settings.maxTokens.toString());
+    localStorage.setItem('system_prompt', settings.systemPrompt);
   }, [settings]);
 
   const scrollToBottom = () => {
@@ -64,6 +70,27 @@ export default function ChatUI() {
 
   const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
+
+    // Перевіряємо наявність необхідних API ключів
+    if (settings.provider === "openrouter" && !settings.apiKey) {
+      setMessages(prev => [...prev, {
+        role: "error",
+        content: "API ключ OpenRouter не налаштовано. Будь ласка, додайте ключ у налаштуваннях.",
+        timestamp: new Date().toISOString()
+      }]);
+      setSettingsOpen(true); // Відкриваємо налаштування
+      return;
+    }
+
+    if (settings.provider === "n8n" && (!settings.n8nApiKey || !settings.n8nUrl || !settings.n8nWorkflow)) {
+      setMessages(prev => [...prev, {
+        role: "error",
+        content: "Налаштування n8n неповні. Будь ласка, додайте всі необхідні параметри у налаштуваннях.",
+        timestamp: new Date().toISOString()
+      }]);
+      setSettingsOpen(true); // Відкриваємо налаштування
+      return;
+    }
 
     const userMessage = {
       role: "user",
@@ -230,6 +257,21 @@ export default function ChatUI() {
   // Додаємо detectWorkflowJson для пошуку JSON структури
   const hasWorkflowData = () => {
     return workflowJson !== null;
+  };
+
+  // Зберігаємо налаштування при закритті діалогу
+  const handleSaveSettings = () => {
+    // Зберігаємо всі налаштування в localStorage
+    localStorage.setItem('openrouter_api_key', settings.apiKey);
+    localStorage.setItem('n8n_api_url', settings.n8nUrl);
+    localStorage.setItem('n8n_api_key', settings.n8nApiKey);
+    localStorage.setItem('n8n_workflow_id', settings.n8nWorkflow);
+    localStorage.setItem('chat_model', settings.model);
+    localStorage.setItem('chat_temperature', settings.temperature.toString());
+    localStorage.setItem('chat_max_tokens', settings.maxTokens.toString());
+    localStorage.setItem('system_prompt', settings.systemPrompt);
+    
+    setSettingsOpen(false);
   };
 
   return (
@@ -543,7 +585,7 @@ export default function ChatUI() {
             <Button variant="outline" onClick={() => setSettingsOpen(false)}>
               Скасувати
             </Button>
-            <Button onClick={() => setSettingsOpen(false)}>
+            <Button onClick={handleSaveSettings}>
               Зберегти
             </Button>
           </div>

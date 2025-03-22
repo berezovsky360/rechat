@@ -1,11 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const HistoryPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [modelFilter, setModelFilter] = useState('');
+  const [historyItems, setHistoryItems] = useState([]);
   
-  // Дані про історію (заглушка)
-  const historyItems = [
+  // Завантаження історії з localStorage при монтуванні компонента
+  useEffect(() => {
+    const savedHistory = localStorage.getItem('chat_history');
+    if (savedHistory) {
+      try {
+        setHistoryItems(JSON.parse(savedHistory));
+      } catch (error) {
+        console.error('Помилка при завантаженні історії:', error);
+        // Використовуємо демо-дані, якщо не вдалося завантажити історію
+        setHistoryItems(getDefaultHistoryItems());
+      }
+    } else {
+      // Якщо історії немає, використовуємо демо-дані
+      setHistoryItems(getDefaultHistoryItems());
+    }
+  }, []);
+  
+  // Функція для отримання демо-даних історії
+  const getDefaultHistoryItems = () => [
     {
       id: 1001,
       query: 'Створити робочий процес для інтеграції з Google Drive',
@@ -29,6 +47,21 @@ const HistoryPage = () => {
     }
   ];
   
+  // Функція для очищення історії
+  const clearHistory = () => {
+    if (window.confirm('Ви дійсно хочете очистити всю історію?')) {
+      setHistoryItems([]);
+      localStorage.removeItem('chat_history');
+    }
+  };
+  
+  // Функція для видалення елемента історії
+  const deleteHistoryItem = (id) => {
+    const updatedHistory = historyItems.filter(item => item.id !== id);
+    setHistoryItems(updatedHistory);
+    localStorage.setItem('chat_history', JSON.stringify(updatedHistory));
+  };
+  
   // Фільтрація історії
   const filteredHistory = historyItems.filter(item => {
     const matchesSearch = searchTerm === '' || 
@@ -41,9 +74,17 @@ const HistoryPage = () => {
   
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800 dark:text-gray-100">Історія</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Історія</h1>
+        <button
+          onClick={clearHistory}
+          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+        >
+          Очистити історію
+        </button>
+      </div>
       
-      <div className="bg-white dark:bg-dark-card rounded-lg shadow-md dark:shadow-dark p-6 border border-gray-200 dark:border-dark-border">
+      <div className="bg-white dark:bg-dark-card rounded-lg shadow-md dark:shadow-dark p-6 border border-gray-200 dark:border-gray-700">
         <div className="mb-4 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
           <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">Ваші запити</h2>
           <div className="flex flex-col sm:flex-row gap-2">
@@ -104,7 +145,7 @@ const HistoryPage = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <button className="text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 mr-2">Переглянути</button>
-                      <button className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300">Видалити</button>
+                      <button className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300" onClick={() => deleteHistoryItem(item.id)}>Видалити</button>
                     </td>
                   </tr>
                 ))
