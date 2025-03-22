@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import Header from '../components/Header';
-import Sidebar from '../components/Sidebar';
+import ThemeToggle from '../components/ThemeToggle';
 
 const Layout = () => {
   const location = useLocation();
@@ -62,7 +61,7 @@ const Layout = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gray-50 dark:bg-dark-bg">
       {/* Мобільна тінь під сайдбаром */}
       {isSidebarOpen && (
         <div 
@@ -73,14 +72,14 @@ const Layout = () => {
 
       {/* Бічна панель */}
       <aside 
-        className={`fixed inset-y-0 left-0 z-20 w-64 transform bg-white shadow-lg transition-transform duration-300 lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-20 w-64 transform bg-white dark:bg-dark-card border-r border-gray-200 dark:border-dark-border shadow-lg dark:shadow-dark transition-transform duration-300 lg:static lg:translate-x-0 ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="flex h-full flex-col">
           {/* Логотип */}
-          <div className="flex h-16 items-center justify-center border-b">
-            <span className="text-2xl font-bold text-blue-600">ReChat</span>
+          <div className="flex h-16 items-center justify-center border-b border-gray-200 dark:border-dark-border">
+            <span className="text-2xl font-bold text-blue-600 dark:text-blue-500">ReChat</span>
           </div>
 
           {/* Навігація */}
@@ -92,8 +91,8 @@ const Layout = () => {
                     to={item.path}
                     className={`flex items-center rounded-lg p-2 transition-colors ${
                       isActive(item.path)
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'text-gray-600 hover:bg-gray-100'
+                        ? 'bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400'
+                        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-border/50'
                     }`}
                     onClick={() => setIsSidebarOpen(false)}
                   >
@@ -106,17 +105,17 @@ const Layout = () => {
           </nav>
 
           {/* Футер сайдбара */}
-          <div className="border-t p-4">
-            <a
-              href="#"
-              className="flex items-center rounded-lg p-2 text-gray-600 hover:bg-gray-100"
+          <div className="border-t border-gray-200 dark:border-dark-border p-4">
+            <Link
+              to="/settings"
+              className="flex items-center rounded-lg p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-border/50"
             >
               <svg className="mr-3 h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
               <span>Налаштування</span>
-            </a>
+            </Link>
           </div>
         </div>
       </aside>
@@ -124,11 +123,11 @@ const Layout = () => {
       {/* Основний контент */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Верхня панель */}
-        <header className="flex h-16 items-center justify-between border-b bg-white px-6">
+        <header className="flex h-16 items-center justify-between border-b border-gray-200 dark:border-dark-border bg-white dark:bg-dark-card px-6">
           {/* Кнопка відкриття/закриття сайдбара (мобільна) */}
           <button
             onClick={toggleSidebar}
-            className="rounded p-1 text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:outline-none lg:hidden"
+            className="rounded p-1 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-border/50 hover:text-gray-900 dark:hover:text-gray-100 focus:outline-none lg:hidden"
           >
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
@@ -136,27 +135,31 @@ const Layout = () => {
           </button>
 
           {/* Заголовок сторінки */}
-          <div className="text-lg font-semibold text-gray-700">
+          <div className="text-lg font-semibold text-gray-700 dark:text-gray-200">
             {navItems.find(item => isActive(item.path))?.label || 'Сторінка'}
           </div>
 
-          {/* Профіль користувача */}
-          <div className="flex items-center">
+          {/* Праві елементи панелі */}
+          <div className="flex items-center space-x-2">
+            {/* Перемикач теми */}
+            <ThemeToggle />
+            
+            {/* Профіль користувача */}
             <div className="relative">
               <button
-                className="flex items-center space-x-2 rounded-full p-1 hover:bg-gray-100 focus:outline-none"
+                className="flex items-center space-x-2 rounded-full p-1 hover:bg-gray-100 dark:hover:bg-dark-border/50 focus:outline-none"
               >
                 <div className="h-8 w-8 rounded-full bg-blue-500 text-white flex items-center justify-center">
                   <span className="text-sm font-medium">КС</span>
                 </div>
-                <span className="hidden text-sm font-medium text-gray-700 md:block">Користувач</span>
+                <span className="hidden text-sm font-medium text-gray-700 dark:text-gray-300 md:block">Користувач</span>
               </button>
             </div>
           </div>
         </header>
 
         {/* Основний контент */}
-        <main className="flex-1 overflow-y-auto bg-gray-50">
+        <main className="flex-1 overflow-y-auto bg-gray-50 dark:bg-dark-bg">
           <Outlet />
         </main>
       </div>
