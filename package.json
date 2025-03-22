@@ -4,7 +4,7 @@
   "private": true,
   "engines": {
     "node": "18.x",
-    "npm": "9.x"
+    "npm": ">=9.x"
   },
   "scripts": {
     "postinstall": "cd frontend && npm install && npm run build && cd ../backend && npm install",
