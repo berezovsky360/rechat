@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
@@ -62,31 +62,29 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Router>
-        <Box sx={{ display: 'flex', height: '100vh' }}>
-          <Header />
-          <Sidebar />
-          <Box
-            component="main"
-            sx={{
-              flexGrow: 1,
-              p: 3,
-              mt: 8,
-              ml: { sm: 8 },
-              overflow: 'auto',
-              backgroundColor: 'background.default',
-            }}
-          >
-            <Routes>
-              <Route path="/" element={<ChatPage />} />
-              <Route path="/templates" element={<TemplatesPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/history" element={<HistoryPage />} />
-              <Route path="/logs" element={<LogsPage />} />
-            </Routes>
-          </Box>
+      <Box sx={{ display: 'flex', height: '100vh' }}>
+        <Header />
+        <Sidebar />
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            p: 3,
+            mt: 8,
+            ml: { sm: 8 },
+            overflow: 'auto',
+            backgroundColor: 'background.default',
+          }}
+        >
+          <Routes>
+            <Route path="/" element={<ChatPage />} />
+            <Route path="/templates" element={<TemplatesPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="/history" element={<HistoryPage />} />
+            <Route path="/logs" element={<LogsPage />} />
+          </Routes>
         </Box>
-      </Router>
+      </Box>
     </ThemeProvider>
   );
 }

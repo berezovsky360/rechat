@@ -15,6 +15,15 @@ dotenv.config();
 
 const app = express();
 
+// Налаштування Content Security Policy
+app.use((req, res, next) => {
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://api.openai.com;"
+  );
+  next();
+});
+
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
