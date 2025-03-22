@@ -51,10 +51,10 @@
 
 @layer base {
   * {
-    @apply border-gray-200 dark:border-gray-700;
+    @apply border-gray-200 dark:border-dark-border;
   }
   body {
-    @apply bg-background text-foreground transition-colors duration-200;
+    @apply bg-gray-50 text-gray-900 dark:bg-dark-bg dark:text-dark-text-primary transition-colors duration-200;
   }
 }
 
@@ -65,6 +65,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #f5f5f5;
 }
 
 code {
@@ -82,9 +83,9 @@ code {
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-gray-300 dark:bg-gray-700 rounded-full;
+  @apply bg-gray-300 dark:bg-dark-border rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-gray-400 dark:bg-gray-600;
-}
+} 

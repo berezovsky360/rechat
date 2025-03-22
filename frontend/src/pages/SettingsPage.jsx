@@ -309,7 +309,7 @@ const SettingsPage = () => {
               <div className="grid grid-cols-3 gap-2">
                 <button
                   className={`flex flex-col items-center space-y-2 p-4 rounded-md border ${
-                    theme === 'light' ? 'border-primary' : 'border-border'
+                    theme === 'light' ? 'border-primary' : 'border-gray-200 dark:border-gray-700'
                   }`}
                   onClick={() => setTheme('light')}
                 >
@@ -320,7 +320,7 @@ const SettingsPage = () => {
                 </button>
                 <button
                   className={`flex flex-col items-center space-y-2 p-4 rounded-md border ${
-                    theme === 'dark' ? 'border-primary' : 'border-border'
+                    theme === 'dark' ? 'border-primary' : 'border-gray-200 dark:border-gray-700'
                   }`}
                   onClick={() => setTheme('dark')}
                 >
@@ -331,7 +331,7 @@ const SettingsPage = () => {
                 </button>
                 <button
                   className={`flex flex-col items-center space-y-2 p-4 rounded-md border ${
-                    theme === 'system' ? 'border-primary' : 'border-border'
+                    theme === 'system' ? 'border-primary' : 'border-gray-200 dark:border-gray-700'
                   }`}
                   onClick={() => setTheme('system')}
                 >
@@ -372,7 +372,7 @@ const SettingsPage = () => {
                   Модель за замовчуванням
                 </label>
                 <select
-                  className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                  className={`w-full rounded-md border border-gray-200 dark:border-gray-700 bg-background px-3 py-2 text-sm`}
                   value={languageModel}
                   onChange={(e) => setLanguageModel(e.target.value)}
                 >

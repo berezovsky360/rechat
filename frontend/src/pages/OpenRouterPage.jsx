@@ -196,7 +196,7 @@ export default function OpenRouterPage() {
                     className={`border rounded-md p-4 transition-colors ${
                       activeModels.includes(model.id) 
                         ? 'border-primary' 
-                        : 'border-border hover:border-muted-foreground'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-muted-foreground'
                     }`}
                     onClick={() => handleToggleModel(model.id)}
                   >

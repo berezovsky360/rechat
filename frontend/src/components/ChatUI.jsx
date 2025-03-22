@@ -251,7 +251,7 @@ export default function ChatUI() {
             <TabsContent value="provider" className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <button
-                  className={`flex flex-col items-center border rounded-md p-4 ${settings.provider === 'openrouter' ? 'border-primary' : 'border-border'}`}
+                  className={`flex flex-col items-center border rounded-md p-4 ${settings.provider === 'openrouter' ? 'border-primary' : 'border-gray-200 dark:border-gray-700'}`}
                   onClick={() => updateSettings('provider', 'openrouter')}
                 >
                   <div className="text-2xl mb-2">🤖</div>
@@ -261,7 +261,7 @@ export default function ChatUI() {
                   </p>
                 </button>
                 <button
-                  className={`flex flex-col items-center border rounded-md p-4 ${settings.provider === 'n8n' ? 'border-primary' : 'border-border'}`}
+                  className={`flex flex-col items-center border rounded-md p-4 ${settings.provider === 'n8n' ? 'border-primary' : 'border-gray-200 dark:border-gray-700'}`}
                   onClick={() => updateSettings('provider', 'n8n')}
                 >
                   <div className="text-2xl mb-2">🔄</div>
@@ -325,7 +325,7 @@ export default function ChatUI() {
                       <div
                         key={model.id}
                         className={`flex items-center justify-between border rounded-md p-2 cursor-pointer ${
-                          settings.model === model.id ? 'border-primary' : 'border-border'
+                          settings.model === model.id ? 'border-primary' : 'border-gray-200 dark:border-gray-700'
                         }`}
                         onClick={() => updateSettings('model', model.id)}
                       >
@@ -371,7 +371,7 @@ export default function ChatUI() {
                   Системний промпт
                 </label>
                 <textarea
-                  className="w-full min-h-[100px] border border-border rounded-md p-2 text-sm"
+                  className="w-full min-h-[100px] border border-gray-200 dark:border-gray-700 rounded-md p-2 text-sm"
                   value={settings.systemPrompt}
                   onChange={(e) => updateSettings('systemPrompt', e.target.value)}
                 />

@@ -17,9 +17,9 @@ export function Sidebar() {
     <div 
       className={`h-screen fixed left-0 top-0 z-40 transition-all duration-300 ease-in-out ${
         isExpanded ? "w-64" : "w-16"
-      } bg-card border-r border-border shadow-md flex flex-col`}
+      } bg-card border-r border-gray-200 dark:border-gray-700 shadow-md flex flex-col`}
     >
-      <div className="p-4 flex items-center justify-between border-b border-border">
+      <div className="p-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
         {isExpanded ? (
           <h2 className="font-bold">ReChat</h2>
         ) : (
@@ -53,7 +53,7 @@ export function Sidebar() {
         </ul>
       </nav>
       
-      <div className="p-4 border-t border-border">
+      <div className="p-4 border-t border-gray-200 dark:border-gray-700">
         <div className="flex items-center">
           <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground mr-2">
             U
