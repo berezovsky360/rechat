@@ -10,7 +10,7 @@
       "restartPolicyMaxRetries": 10
     },
     "nixpacks": {
-      "nodeVersion": "18"
+      "nodeVersion": "22.14.0"
     }
   }
   

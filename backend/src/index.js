@@ -11,7 +11,7 @@ dotenv.config();
 
 // Налаштування змінних середовища
 const PORT = process.env.PORT || 5000;
-const RAILWAY_STATIC_URL = process.env.RAILWAY_STATIC_URL || '';
+const RAILWAY_PUBLIC_DOMAIN = process.env.RAILWAY_PUBLIC_DOMAIN || '';
 const DEMO_MODE = process.env.DEMO_MODE === 'true';
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const N8N_API_URL = process.env.N8N_API_URL;
@@ -19,6 +19,8 @@ const N8N_AUTH_TOKEN = process.env.N8N_AUTH_TOKEN;
 
 // Перевірка режиму роботи
 console.log(`Сервер запущено в ${DEMO_MODE ? 'ДЕМО' : 'ПОВНОМУ'} режимі`);
+console.log(`Порт: ${PORT}`);
+console.log(`Railway Domain: ${RAILWAY_PUBLIC_DOMAIN}`);
 
 const app = express();
 
@@ -33,7 +35,8 @@ app.use((req, res, next) => {
 
 // Middleware
 app.use(cors());
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 
 // Базові маршрути API
 app.get('/api/health', (req, res) => {
