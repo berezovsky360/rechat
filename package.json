@@ -7,7 +7,10 @@
     "npm": ">=9.x"
   },
   "scripts": {
-    "postinstall": "cd frontend && npm install && npm run build && cd ../backend && npm install",
+    "postinstall": "npm run install-frontend && npm run build-frontend && npm run install-backend",
+    "install-frontend": "cd frontend && npm install",
+    "build-frontend": "cd frontend && npm run build",
+    "install-backend": "cd backend && npm install",
     "start": "cd backend && npm start"
   },
   "workspaces": [
